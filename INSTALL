@@ -1,6 +1,8 @@
-First, edit the top of Makefile for where the executables should be installed.
-Next, change LDFLAGS and CFLAGS so that libsndfile and the boost libraries can
-be found.
+The build uses a very old Makefile, but appears to still work.
+
+First, edit the top of Makefile for where the executables should be
+installed.  Next, change LDFLAGS and CFLAGS so that libsndfile
+libraries can be found.
 
 Call:
 
@@ -12,6 +14,10 @@ This will rewrite Makefile with the new dependencies.
 
 Builds the executables.
 
-> make install
+> sudo make install
 
 Copies executables to BINDIR
+
+
+Note that by default, iaexpr is not made because it depends on
+a little-used library called libeval. See comments in iaexpr.cc.

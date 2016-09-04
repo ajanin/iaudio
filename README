@@ -1,6 +1,7 @@
 These are a series of utilities that use libsndfile,
 an open source audio processing library available at
-http://www.mega-nerd.com/libsndfile.
+http://www.mega-nerd.com/libsndfile or through your
+favorite package manager (e.g. apt-get install libsndfile1-dev).
 
 See INSTALL for installation instructions.
 See LICENSE for licensing terms.
@@ -15,19 +16,6 @@ iajoin 	- Combine audio file excerpts into a new audio file
 iamix   - Volume equalize and mix audio files
 iastat 	- Compute statistics on audio (e.g. min, max, stddev)
 
-iaconvert - A python script that tries to convert any audio file
-to a standard format. Requires a bunch of other programs to work.
-I wouldn't bother with this if I were you -- it's really just for
-my own use.
-
-INSTALLING
-
-Sorry, but I only have a (very old) Makefile. If libsndfile is installed
-in a standard location, the following should work:
-
-make depend
-make
-sudo make install
-
-Note that by default, iaexpr is not made because it depends on
-a little-used library called libeval. See comments in iaexpr.cc.
+iaconvert - A python script that tries to convert any audio file to a
+standard format. Requires a bunch of other programs to work.  This
+probably will not work in other environments without adjustment.
