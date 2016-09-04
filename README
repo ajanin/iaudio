@@ -12,4 +12,22 @@ iadiff  - Show differences between audio files.
 iaexpr  - Apply an arbitrary function to every sample in an audio file.
 iainfo  - Get header information such as duration, sample rate, etc.
 iajoin 	- Combine audio file excerpts into a new audio file
+iamix   - Volume equalize and mix audio files
 iastat 	- Compute statistics on audio (e.g. min, max, stddev)
+
+iaconvert - A python script that tries to convert any audio file
+to a standard format. Requires a bunch of other programs to work.
+I wouldn't bother with this if I were you -- it's really just for
+my own use.
+
+INSTALLING
+
+Sorry, but I only have a (very old) Makefile. If libsndfile is installed
+in a standard location, the following should work:
+
+make depend
+make
+sudo make install
+
+Note that by default, iaexpr is not made because it depends on
+a little-used library called libeval. See comments in iaexpr.cc.

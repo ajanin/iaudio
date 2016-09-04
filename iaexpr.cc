@@ -9,6 +9,10 @@
 // Using libeval from http://www.dutky.info/jeff/software/libeval,
 // apply a function to every sample of an audio file.
 //
+// To compile this file, just make sure libeval.a and eval.h are
+// findable, and then edit the Makefile, appending iaexpr.cc to
+// SOURCES and iaexpr to EXECS.
+//
 
 #include <stdlib.h>
 #include <stdio.h>

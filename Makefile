@@ -1,6 +1,4 @@
 # Where to install
-#BINDIR = /u/janin/bin
-#BINDIR = /u/drspeech/i586-linux/bin
 BINDIR=/usr/local/bin
 
 # Flags to linker. Must be able to find libsndfile.
@@ -19,10 +17,9 @@ DEPENDFLAGS = $(CFLAGS) $(CXXFLAGS)
 
 LINK.c = $(CC) $(LDFLAGS)
 
-# If you don't have libeval, remove iaexpr
-SOURCES = iastat.cc sndstats.cc iableep.cc iainfo.cc iadiff.cc iaamp.cc iajoin.cc iachop.cc iamix.cc iaexpr.cc
+SOURCES = iastat.cc sndstats.cc iableep.cc iainfo.cc iadiff.cc iaamp.cc iajoin.cc iachop.cc iamix.cc
 
-EXECS = iachop iajoin iastat iableep iainfo iadiff iaamp iamix iaexpr
+EXECS = iachop iajoin iastat iableep iainfo iadiff iaamp iamix
 
 default : all
 
