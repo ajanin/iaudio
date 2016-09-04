@@ -1,0 +1,17 @@
+First, edit the top of Makefile for where the executables should be installed.
+Next, change LDFLAGS and CFLAGS so that libsndfile and the boost libraries can
+be found.
+
+Call:
+
+> make depend
+
+This will rewrite Makefile with the new dependencies.
+
+> make
+
+Builds the executables.
+
+> make install
+
+Copies executables to BINDIR

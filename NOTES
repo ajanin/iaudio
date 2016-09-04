@@ -1,0 +1,7 @@
+rm afile
+foreach a ( /u/luke/projects/audeme/glass/* )
+echo --------------- >> afile
+echo $a >> afile
+iaconvert -rate 8000 $a testit >> afile
+end
+

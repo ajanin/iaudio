@@ -1,0 +1,156 @@
+#!/usr/bin/env python2.7
+#
+# File: iaconvert
+# Author: Adam Janin
+# Sept 10 2014
+#
+
+# Given an audio file in any format libsndfile understands, convert to
+# 16kHz, 16 bit linear PCM, mono, mswave format.
+
+# Calls the following external audio tools to do the work, which all
+# must be on your path:
+#
+#  sndfile-convert
+#  sndfile-resample
+#  sndfile-mix-to-mono
+#  iainfo
+#  
+#
+# TODO:
+#  add nchans, sample type other than 16 bit linear PCM, etc.
+#  Figure out a better way to determine the formats sndfile supports.
+#  Maybe write my own sndfile routine that does all this itself?
+
+import argparse
+import atexit
+import os
+import os.path
+import pipes
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+
+######################################################################
+
+class State:
+      '''Stores state for this program (e.g. globals). There should be no instances of State.'''
+      progname = None # Base name of this program
+      args = None     # Command line arguments (argparse instance)
+      tmpdir = None   # Temporary directory
+
+######################################################################
+
+class Defaults:
+      '''Convenient place to store defaults'''
+      rate = 16000    # Output sample rate
+      format = 'wav'  # Format string. Must be one sndfile-convert knows.
+      verbose = 0
+
+######################################################################
+
+def main(argv):
+      # Read and validate command line
+      State.progname = os.path.basename(argv[0])
+      parse_arguments(argv[1:])
+      if not os.path.isfile(State.args.inaudio):
+            fatal_error("Couldn't read input file '%s'."%(State.args.inaudio))
+      if State.args.format not in get_sndfile_formats():
+            fatal_error("Format '%s' not recognized by sndfile-convert."%(State.args.format))
+
+      # Make a temporary directory. Note the "atexit" decoration
+      # right after main that cleans this up upon exit.
+      State.tmpdir = tempfile.mkdtemp()
+
+      # Note: The variable "curfile" contains the path
+      # of the file we're currently working on. This lets
+      # us skip steps that aren't needed (e.g. resampling).
+
+      # Convert to desired format.
+      # Note hardwired -pcm16
+      curfile='%s/conv.%s'%(State.tmpdir, State.args.format)
+      cmd = 'sndfile-convert -pcm16 %s %s'%(pipes.quote(State.args.inaudio), curfile)
+      retcode = subprocess.call(cmd, shell=True)
+      if retcode != 0:
+            fatal_error('sndfile-convert unexpectedly failed with return code %d'%(retcode))
+
+      # Get info about file using iainfo. Just channels and rate for
+      # now. Note that this info should be the same as the source
+      # file.
+      cmd = "iainfo -f 'channels %%c rate %%s\\n' %s"%(curfile)
+      iainfostr = subprocess.check_output(cmd, shell=True)
+      iainfo=re.match(r"channels (?P<channels>\d+) rate (?P<rate>\d+)", iainfostr)
+      if iainfo is None:
+            fatal_error('iainfo was unexpectedly unable to get info from input file.')
+      
+      # Rate and channels of the input file
+      inrate=int(iainfo.group('rate'))
+      inchans=int(iainfo.group('channels'))
+
+      if State.args.verbose >= 2:
+            print('Got outrate=%d outformat=%s inrate=%d inchans=%d tmpdir=%s'%(State.args.rate, State.args.format, inrate, inchans, State.tmpdir))
+
+      # Convert sampling rate if needed
+      if inrate != State.args.rate:
+            resampledfile = '%s/resampled.%s'%(State.tmpdir, State.args.format)
+            cmd='sndfile-resample -to %d -c 1 %s %s'%(State.args.rate, curfile, resampledfile)
+            if State.args.verbose >= 1:
+                  print('Resampling from %d to %d'%(inrate, State.args.rate))
+            # sndfile-resample outputs a lot of junk to stdout. Redirect
+            # stdout to /dev/null
+            retcode = subprocess.call(cmd, shell=True, stdout=open(os.devnull, 'wb'))
+            if retcode != 0:
+                  fatal_error('sndfile-resample unexpectedly failed.')
+            curfile=resampledfile
+
+      # Convert to mono if needed
+      if inchans != 1:
+            monofile = '%s/mono.%s'%(State.tmpdir, State.args.format)
+            cmd='sndfile-mix-to-mono %s %s'%(curfile, monofile)
+            if State.args.verbose >= 1:
+                  print('Mixing from %d channels to 1 channel'%(inchans))
+            retcode = subprocess.call(cmd, shell=True)
+            if retcode != 0:
+                  fatal_error('sndfile-mix-to-mono unexpectedly failed.')
+            curfile=monofile
+
+      # Write output
+      shutil.copyfile(curfile, State.args.outaudio)
+
+      # Done
+
+# end main()
+
+######################################################################
+
+@atexit.register
+def cleanup():
+      '''Clean up temporary directory on exit if it's been created.'''
+      if State.tmpdir is not None:
+            shutil.rmtree(State.tmpdir)
+
+######################################################################
+
+def parse_arguments(strs):
+    parser = argparse.ArgumentParser(description='ICSI Audio Conversion Utility')
+    parser.add_argument('inaudio')
+    parser.add_argument('outaudio')
+    parser.add_argument('-rate', type=int, default=Defaults.rate, help='Sample rate in Hz. (Default %(default)s)')
+    parser.add_argument('-format', default=Defaults.format, help='Output format. Must be a string sndfile-convert understands. (Default %(default)s)')
+    parser.add_argument('-verbose', type=int, default=Defaults.verbose, help='Vebosity level. (Default %(default)s)')
+
+    State.args = parser.parse_args(strs)
+
+def fatal_error(msg):
+      sys.stderr.write('\n%s: ERROR  %s\n\n'%(State.progname, msg))
+      sys.exit(1)
+
+def get_sndfile_formats():
+      '''Call sndfile-convert and try to parse the output to extract the supported formats. Depends on the details of how sndfile-convert outputs its help message. There's gotta be a better way.'''
+      str = subprocess.check_output('sndfile-convert')
+      return re.findall('^ +([a-zA-Z0-9]+) +: ', str, re.MULTILINE)
+
+if __name__ == "__main__":
+      sys.exit(main(sys.argv))

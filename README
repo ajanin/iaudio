@@ -1,0 +1,15 @@
+These are a series of utilities that use libsndfile,
+an open source audio processing library available at
+http://www.mega-nerd.com/libsndfile.
+
+See INSTALL for installation instructions.
+See LICENSE for licensing terms.
+
+iaamp   - Apply an exponential power to every sample in an audio file.
+iableep - Add "bleep" sounds to an audio file.
+iachop 	- Divide up audio files into multiple new audio files.
+iadiff  - Show differences between audio files.
+iaexpr  - Apply an arbitrary function to every sample in an audio file.
+iainfo  - Get header information such as duration, sample rate, etc.
+iajoin 	- Combine audio file excerpts into a new audio file
+iastat 	- Compute statistics on audio (e.g. min, max, stddev)
