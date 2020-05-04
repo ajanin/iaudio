@@ -98,7 +98,7 @@ int main(int argc, char** argv) {
       usage();
       break;
     case 'n':
-      normalize_format = 1;
+      //normalize_format = 1;
       break;
     case 't':
       if (sscanf(optarg, "%f", &TimeDenom) != 1) {
